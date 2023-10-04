@@ -34,18 +34,18 @@ function get_duration() {
 }
 
 function log_success() {
-	function=$(python -c 'import sys,json; print(json.dumps(sys.stdin.read()))' <<<"$2")
+	function=$(python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))' <<<"$2")
 	printf '{"name": "awscli", "duration": %d, "function": %s, "status": "PASS"}\n' "$1" "$function"
 }
 
 function log_failure() {
-	function=$(python -c 'import sys,json; print(json.dumps(sys.stdin.read()))' <<<"$2")
+	function=$(python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))' <<<"$2")
 	err=$(echo "$3" | tr -d '\n')
 	printf '{"name": "awscli", "duration": %d, "function": %s, "status": "FAIL", "error": "%s"}\n' "$1" "$function" "$err"
 }
 
 function log_alert() {
-	function=$(python -c 'import sys,json; print(json.dumps(sys.stdin.read()))' <<<"$2")
+	function=$(python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))' <<<"$2")
 	err=$(echo "$4" | tr -d '\n')
 	printf '{"name": "awscli", "duration": %d, "function": %s, "status": "FAIL", "alert": "%s", "error": "%s"}\n' "$1" "$function" "$3" "$err"
 }
@@ -71,12 +71,29 @@ function make_bucket() {
 
 function delete_bucket() {
 	# Delete bucket
-	function="${AWS} s3 rb s3://${1} --force"
+	# function="${AWS} s3 rb s3://${1} --force"
+	function="${AWS} s3 rm s3://${1} --recursive"
 	out=$($function 2>&1)
 	rv=$?
 
 	# echo the output
 	echo "${out}"
+
+	return $rv
+}
+
+function delete_all_buckets() {
+	# Delete all buckets
+	function="${AWS} s3api list-buckets"
+	out=$($function 2>&1)
+	rv=$?
+
+	if [ $rv -eq 0 ]; then
+		bucket_list=$(echo "$out" | jq -r .Buckets[].Name | grep awscli-mint-test-bucket-)
+		for bucket in $bucket_list; do
+			${AWS} s3 rb s3://"${bucket}" --force >/dev/null 2>&1
+		done
+	fi
 
 	return $rv
 }
@@ -302,7 +319,7 @@ function test_list_objects() {
 		function="${AWS} s3api list-objects --bucket ${bucket_name} --prefix linux"
 		out=$($function)
 		rv=$?
-		key_name=$(echo "$out" | jq -r .Contents[].Key)
+		key_name=$(echo "$out" | jq -r .Contents[].Key 2>/dev/null)
 		if [ $rv -eq 0 ] && [ "$key_name" != "" ]; then
 			rv=1
 			out="list-objects without existing prefix failed"
@@ -326,7 +343,7 @@ function test_list_objects() {
 		function="${AWS} s3api list-objects-v2 --bucket ${bucket_name} --prefix linux"
 		out=$($function)
 		rv=$?
-		key_name=$(echo "$out" | jq -r .Contents[].Key)
+		key_name=$(echo "$out" | jq -r .Contents[].Key 2>/dev/null)
 		if [ $rv -eq 0 ] && [ "$key_name" != "" ]; then
 			rv=1
 			out="list-objects-v2 without existing prefix failed"

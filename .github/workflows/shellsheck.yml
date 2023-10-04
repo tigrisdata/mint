@@ -1,9 +1,9 @@
-name: 'Trigger: Shell scripts formatting action'
+name: "Trigger: Shell scripts formatting action"
 
 on:
   pull_request:
     branches:
-    - master
+      - master
 
 jobs:
   sh-checker:
@@ -13,8 +13,7 @@ jobs:
       - name: Run the sh-checker
         uses: luizm/action-sh-checker@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_ACCESS_TOKEN }}
           SHFMT_OPTS: -s # arguments to shfmt.
         with:
           sh_checker_comment: true
-
