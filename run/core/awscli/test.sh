@@ -1898,13 +1898,13 @@ main() {
 		# test_serverside_encryption_get_range &&
 		# test_serverside_encryption_multipart &&
 		# test_serverside_encryption_multipart_copy &&
+		# test_serverside_encryption_error &&
 		# Success cli ops.
 		test_aws_s3_cp &&
 		test_aws_s3_sync &&
 		# Error tests
 		test_list_objects_error &&
-		test_put_object_error &&
-		test_serverside_encryption_error
+		test_put_object_error
 	# test_worm_bucket && \
 	# test_legal_hold
 
