@@ -7,7 +7,7 @@ ENV GOPATH /usr/local/gopath
 ENV PATH $GOPATH/bin:$GOROOT/bin:$PATH
 ENV MINT_ROOT_DIR /mint
 
-RUN apt-get --yes update && apt-get --yes upgrade && \
+RUN apt-get --yes update && \
     apt-get --yes --quiet install wget jq curl git dnsmasq python3 python3-pip
 
 COPY . /mint
