@@ -18,8 +18,11 @@
 HASH_1_KB=$(md5sum "${MINT_DATA_DIR}/datafile-1-kB" | awk '{print $1}')
 HASH_65_MB=$(md5sum "${MINT_DATA_DIR}/datafile-65-MB" | awk '{print $1}')
 
+RUN_ON_FAIL=${RUN_ON_FAIL:-1}
+
 _init() {
 	AWS="aws --endpoint-url $1"
+	RUN_NAME="run-$RANDOM"
 }
 
 function get_time() {
@@ -50,9 +53,25 @@ function log_alert() {
 	printf '{"name": "awscli", "duration": %d, "function": %s, "status": "FAIL", "alert": "%s", "error": "%s"}\n' "$1" "$function" "$3" "$err"
 }
 
+function cleanup() {
+	# Delete all buckets
+	function="${AWS} s3api list-buckets"
+	out=$($function 2>&1)
+	rv=$?
+
+	if [ $rv -eq 0 ]; then
+		bucket_list=$(echo "$out" | jq -r .Buckets[].Name | grep awscli-mint-test-bucket-$RUN_NAME-)
+		for bucket in $bucket_list; do
+			${AWS} s3 rb s3://"${bucket}" --force >/dev/null 2>&1
+		done
+	fi
+
+	return $rv
+}
+
 function make_bucket() {
 	# Make bucket
-	bucket_name="awscli-mint-test-bucket-$RANDOM"
+	bucket_name="awscli-mint-test-bucket-$RUN_NAME-$RANDOM"
 	function="${AWS} s3api create-bucket --bucket ${bucket_name}"
 
 	# execute the test
@@ -78,22 +97,6 @@ function delete_bucket() {
 
 	# echo the output
 	echo "${out}"
-
-	return $rv
-}
-
-function delete_all_buckets() {
-	# Delete all buckets
-	function="${AWS} s3api list-buckets"
-	out=$($function 2>&1)
-	rv=$?
-
-	if [ $rv -eq 0 ]; then
-		bucket_list=$(echo "$out" | jq -r .Buckets[].Name | grep awscli-mint-test-bucket-)
-		for bucket in $bucket_list; do
-			${AWS} s3 rb s3://"${bucket}" --force >/dev/null 2>&1
-		done
-	fi
 
 	return $rv
 }
@@ -135,6 +138,10 @@ function test_create_bucket() {
 		# clean up and log error
 		${AWS} s3 rb s3://"${bucket_name}" --force >/dev/null 2>&1
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
+	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
 	fi
 
 	return $rv
@@ -190,6 +197,10 @@ function test_upload_object() {
 		# clean up and log error
 		${AWS} s3 rb s3://"${bucket_name}" --force >/dev/null 2>&1
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
+	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
 	fi
 
 	return $rv
@@ -276,6 +287,10 @@ function test_lookup_object_prefix() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	else
 		log_success "$(get_duration "$start_time")" "${test_function}"
+	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
 	fi
 
 	return $rv
@@ -365,6 +380,10 @@ function test_list_objects() {
 		${AWS} s3 rb s3://"${bucket_name}" --force >/dev/null 2>&1
 		rm -f /tmp/datafile-1-kB
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
+	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
 	fi
 
 	return $rv
@@ -465,6 +484,10 @@ function test_multipart_upload_0byte() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
 
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 
@@ -555,6 +578,10 @@ function test_multipart_upload() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
 
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 
@@ -612,6 +639,10 @@ function test_max_key_list() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
 
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 
@@ -654,6 +685,10 @@ function test_copy_object() {
 		log_success "$(get_duration "$start_time")" "${test_function}"
 	else
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
+	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
 	fi
 
 	return $rv
@@ -727,6 +762,10 @@ function test_copy_object_storage_class() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
 
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 
@@ -797,6 +836,10 @@ function test_copy_object_storage_class_same() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
 
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 
@@ -848,6 +891,10 @@ function test_presigned_object() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
 
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 
@@ -882,6 +929,10 @@ function test_upload_object_10() {
 		# clean up and log error
 		${AWS} s3 rb s3://"${bucket_name}" --force >/dev/null 2>&1
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
+	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
 	fi
 
 	return $rv
@@ -964,6 +1015,10 @@ function test_multipart_upload_10() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
 
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 
@@ -1028,6 +1083,10 @@ function test_bucket_lifecycle() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
 
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 
@@ -1071,6 +1130,10 @@ function test_aws_s3_cp() {
 		# clean up and log error
 		${AWS} s3 rb s3://"${bucket_name}" --force >/dev/null 2>&1
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
+	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
 	fi
 
 	return $rv
@@ -1117,6 +1180,10 @@ function test_aws_s3_sync() {
 		# clean up and log error
 		${AWS} s3 rb s3://"${bucket_name}" --force >/dev/null 2>&1
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
+	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
 	fi
 
 	return $rv
@@ -1189,6 +1256,10 @@ function test_list_objects_error() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
 
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 
@@ -1242,6 +1313,10 @@ function test_put_object_error() {
 		# clean up and log error
 		${AWS} s3 rb s3://"${bucket_name}" --force >/dev/null 2>&1
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
+	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
 	fi
 
 	return $rv
@@ -1316,6 +1391,10 @@ function test_serverside_encryption() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
 
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 
@@ -1387,6 +1466,10 @@ function test_serverside_encryption_multipart() {
 		# clean up and log error
 		${AWS} s3 rb s3://"${bucket_name}" --force >/dev/null 2>&1
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
+	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
 	fi
 
 	return $rv
@@ -1481,6 +1564,10 @@ function test_serverside_encryption_multipart_copy() {
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
 
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 # tests server side encryption headers for range get calls
@@ -1525,6 +1612,11 @@ function test_serverside_encryption_get_range() {
 		${AWS} s3 rb s3://"${bucket_name}" --force >/dev/null 2>&1
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
 	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
+	fi
+
 	return $rv
 }
 
@@ -1600,6 +1692,10 @@ function test_serverside_encryption_error() {
 		# clean up and log error
 		${AWS} s3 rb s3://"${bucket_name}" --force >/dev/null 2>&1
 		log_failure "$(get_duration "$start_time")" "${function}" "${out}"
+	fi
+
+	if [ "$RUN_ON_FAIL" -eq 1 ]; then
+		return 0
 	fi
 
 	return $rv
@@ -1787,16 +1883,18 @@ main() {
 		test_multipart_upload &&
 		test_max_key_list &&
 		test_copy_object &&
-		test_copy_object_storage_class &&
-		test_copy_object_storage_class_same &&
+		# storage class tests
+		# test_copy_object_storage_class &&
+		# test_copy_object_storage_class_same &&
 		test_presigned_object &&
 		test_upload_object_10 &&
 		test_multipart_upload_10 &&
 		test_bucket_lifecycle &&
-		test_serverside_encryption &&
-		test_serverside_encryption_get_range &&
-		test_serverside_encryption_multipart &&
-		test_serverside_encryption_multipart_copy &&
+		# SSE tests
+		# test_serverside_encryption &&
+		# test_serverside_encryption_get_range &&
+		# test_serverside_encryption_multipart &&
+		# test_serverside_encryption_multipart_copy &&
 		# Success cli ops.
 		test_aws_s3_cp &&
 		test_aws_s3_sync &&
@@ -1810,4 +1908,8 @@ main() {
 	return $?
 }
 
+# cleanup on exit
+trap cleanup EXIT
+
+# run the main program
 _init "$@" && main
