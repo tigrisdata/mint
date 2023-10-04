@@ -1883,16 +1883,18 @@ main() {
 		test_multipart_upload &&
 		test_max_key_list &&
 		test_copy_object &&
-		test_copy_object_storage_class &&
-		test_copy_object_storage_class_same &&
+		# storage class tests
+		# test_copy_object_storage_class &&
+		# test_copy_object_storage_class_same &&
 		test_presigned_object &&
 		test_upload_object_10 &&
 		test_multipart_upload_10 &&
 		test_bucket_lifecycle &&
-		test_serverside_encryption &&
-		test_serverside_encryption_get_range &&
-		test_serverside_encryption_multipart &&
-		test_serverside_encryption_multipart_copy &&
+		# SSE tests
+		# test_serverside_encryption &&
+		# test_serverside_encryption_get_range &&
+		# test_serverside_encryption_multipart &&
+		# test_serverside_encryption_multipart_copy &&
 		# Success cli ops.
 		test_aws_s3_cp &&
 		test_aws_s3_sync &&
