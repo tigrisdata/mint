@@ -180,6 +180,9 @@ function main() {
 		fi
 	done
 
+	# Print the output from the tests
+	cat "$BASE_LOG_DIR/$LOG_FILE"
+
 	## Report when all tests in run_list are run
 	if [ "$i" -eq "$count" ]; then
 		echo -e "\nAll tests ran successfully"
