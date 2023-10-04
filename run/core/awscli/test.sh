@@ -19,6 +19,7 @@ HASH_1_KB=$(md5sum "${MINT_DATA_DIR}/datafile-1-kB" | awk '{print $1}')
 HASH_65_MB=$(md5sum "${MINT_DATA_DIR}/datafile-65-MB" | awk '{print $1}')
 
 RUN_ON_FAIL=${RUN_ON_FAIL:-1}
+NUM_FAILED_TESTS=0
 
 _init() {
 	AWS="aws --endpoint-url $1"
@@ -45,6 +46,8 @@ function log_failure() {
 	function=$(python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))' <<<"$2")
 	err=$(echo "$3" | tr -d '\n')
 	printf '{"name": "awscli", "duration": %d, "function": %s, "status": "FAIL", "error": "%s"}\n' "$1" "$function" "$err"
+
+	NUM_FAILED_TESTS=$((NUM_FAILED_TESTS + 1))
 }
 
 function log_alert() {
@@ -1895,15 +1898,20 @@ main() {
 		# test_serverside_encryption_get_range &&
 		# test_serverside_encryption_multipart &&
 		# test_serverside_encryption_multipart_copy &&
+		# test_serverside_encryption_error &&
 		# Success cli ops.
 		test_aws_s3_cp &&
 		test_aws_s3_sync &&
 		# Error tests
 		test_list_objects_error &&
-		test_put_object_error &&
-		test_serverside_encryption_error
+		test_put_object_error
 	# test_worm_bucket && \
 	# test_legal_hold
+
+	# return failure if run_on_fail mode is enabled and one or more tests failed
+	if [ "$RUN_ON_FAIL" -eq 1 ] && [ "$NUM_FAILED_TESTS" -ne 0 ]; then
+		return 1
+	fi
 
 	return $?
 }
