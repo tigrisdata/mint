@@ -25,14 +25,14 @@ To run Mint with only the `awscli` test against TigrisOS as test target,
 
 ```sh
 $ docker run -e SERVER_ENDPOINT=dev-tigris-os.fly.dev -e ACCESS_KEY=Q3AM3UQ867SPQQA43P2F \
-             -e SECRET_KEY=zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG -e ENABLE_HTTPS=1 tigrisdata/mint awscli
+             -e SECRET_KEY=zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG -e ENABLE_HTTPS=1 -e RUN_ON_FAIL=1 tigrisdata/mint awscli
 ```
 
 To run Mint with all the tests against TigrisOS as test target,
 
 ```sh
 $ docker run -e SERVER_ENDPOINT=dev-tigris-os.fly.dev -e ACCESS_KEY=Q3AM3UQ867SPQQA43P2F \
-             -e SECRET_KEY=zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG -e ENABLE_HTTPS=1 tigrisdata/mint
+             -e SECRET_KEY=zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG -e ENABLE_HTTPS=1 -e RUN_ON_FAIL=1 tigrisdata/mint
 ```
 
 After the tests are run, output is stored in `/mint/log` directory inside the container. To get these logs, use `docker cp` command. For example
