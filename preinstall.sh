@@ -26,14 +26,6 @@ fi
 
 $APT install apt-transport-https
 
-if ! $WGET --output-document=packages-microsoft-prod.deb https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb | bash -; then
-	echo "unable to download dotnet packages"
-	exit 1
-fi
-
-dpkg -i packages-microsoft-prod.deb
-rm -f packages-microsoft-prod.deb
-
 $APT update
 $APT install gnupg ca-certificates
 
@@ -46,7 +38,7 @@ if ! $WGET --output-document=- "$download_url" | tar -C "${GO_INSTALL_PATH}" -zx
 	exit 1
 fi
 
-xargs --arg-file="${MINT_ROOT_DIR}/install-packages.list" apt --quiet --yes install
+xargs --arg-file="${MINT_ROOT_DIR}/install-packages.list" apt --quiet --yes --no-install-recommends --no-install-suggests install
 
 # set python 3.10 as default
 update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
