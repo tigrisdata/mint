@@ -20,6 +20,7 @@ HASH_65_MB=$(md5sum "${MINT_DATA_DIR}/datafile-65-MB" | awk '{print $1}')
 
 _init() {
 	AWS="aws --endpoint-url $1"
+	RUN_NAME="RUN-$RANDOM"
 }
 
 function get_time() {
@@ -50,9 +51,25 @@ function log_alert() {
 	printf '{"name": "awscli", "duration": %d, "function": %s, "status": "FAIL", "alert": "%s", "error": "%s"}\n' "$1" "$function" "$3" "$err"
 }
 
+function cleanup() {
+	# Delete all buckets
+	function="${AWS} s3api list-buckets"
+	out=$($function 2>&1)
+	rv=$?
+
+	if [ $rv -eq 0 ]; then
+		bucket_list=$(echo "$out" | jq -r .Buckets[].Name | grep awscli-mint-test-bucket-$RUN_NAME-)
+		for bucket in $bucket_list; do
+			${AWS} s3 rb s3://"${bucket}" --force >/dev/null 2>&1
+		done
+	fi
+
+	return $rv
+}
+
 function make_bucket() {
 	# Make bucket
-	bucket_name="awscli-mint-test-bucket-$RANDOM"
+	bucket_name="awscli-mint-test-bucket-$RUN_NAME-$RANDOM"
 	function="${AWS} s3api create-bucket --bucket ${bucket_name}"
 
 	# execute the test
@@ -78,22 +95,6 @@ function delete_bucket() {
 
 	# echo the output
 	echo "${out}"
-
-	return $rv
-}
-
-function delete_all_buckets() {
-	# Delete all buckets
-	function="${AWS} s3api list-buckets"
-	out=$($function 2>&1)
-	rv=$?
-
-	if [ $rv -eq 0 ]; then
-		bucket_list=$(echo "$out" | jq -r .Buckets[].Name | grep awscli-mint-test-bucket-)
-		for bucket in $bucket_list; do
-			${AWS} s3 rb s3://"${bucket}" --force >/dev/null 2>&1
-		done
-	fi
 
 	return $rv
 }
@@ -1810,4 +1811,8 @@ main() {
 	return $?
 }
 
+# cleanup on exit
+trap cleanup EXIT
+
+# run the main program
 _init "$@" && main
