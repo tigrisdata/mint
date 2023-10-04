@@ -24,6 +24,13 @@ fi
 output_log_file="$1"
 error_log_file="$2"
 
+# set default values
+ENABLE_VIRTUAL_STYLE=${ENABLE_VIRTUAL_STYLE:-0}
+ENABLE_HTTPS=${ENABLE_HTTPS:-1}
+MINT_ROOT_DIR=${MINT_ROOT_DIR:-/mint}
+MINT_DATA_DIR=${MINT_DATA_DIR:-$MINT_ROOT_DIR/data}
+SERVER_REGION=${SERVER_REGION:-global}
+
 # configure awscli
 aws configure set aws_access_key_id "$ACCESS_KEY"
 aws configure set aws_secret_access_key "$SECRET_KEY"

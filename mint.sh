@@ -24,7 +24,7 @@ ENABLE_VIRTUAL_STYLE=${ENABLE_VIRTUAL_STYLE:-0}
 RUN_ON_FAIL=${RUN_ON_FAIL:-0}
 
 if [ -z "$SERVER_ENDPOINT" ]; then
-	SERVER_ENDPOINT="play.minio.io:9000"
+	SERVER_ENDPOINT="dev-tigris-os.fly.dev"
 	ACCESS_KEY="Q3AM3UQ867SPQQA43P2F"
 	SECRET_KEY="zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
 	ENABLE_HTTPS=1
@@ -149,7 +149,7 @@ function main() {
 	echo "To get logs, run 'docker cp ${CONTAINER_ID}:/mint/log /tmp/mint-logs'"
 	echo
 
-	[ "$ENABLE_HTTPS" == "1" ] && trust_s3_endpoint_tls_cert
+	[ "$ENABLE_HTTPS" == "1" ]
 
 	declare -a run_list
 	sdks=("$@")
