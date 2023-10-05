@@ -3,7 +3,7 @@ name: "Trigger: Shell scripts formatting action"
 on:
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   sh-checker:

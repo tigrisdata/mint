@@ -1,6 +1,6 @@
 # Mint
 
-Mint is a testing framework for TigrisOS, available as a docker image. It runs correctness, benchmarking and stress tests. Following are the SDKs/tools used in correctness tests.
+Mint is a testing framework for S3 compatible object stores, available as a docker image. It runs correctness, benchmarking and stress tests. Following are the SDKs/tools used in correctness tests.
 
 - awscli
 - aws-sdk-go
@@ -8,14 +8,8 @@ Mint is a testing framework for TigrisOS, available as a docker image. It runs c
 - aws-sdk-php
 - aws-sdk-ruby
 - healthcheck
-- mc
-- minio-go
-- minio-java
-- minio-js
-- minio-py
 - s3cmd
 - s3select
-- versioning
 
 ## Running Mint
 
@@ -45,16 +39,16 @@ docker cp <container-id>:/mint/log /tmp/logs
 
 Below environment variables are required to be passed to the docker container. Supported environment variables:
 
-| Environment variable   | Description                                                                                                                                    | Example                                    |
-| :--------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------- |
-| `SERVER_ENDPOINT`      | Endpoint of TigrisOS in the format `HOST:PORT`; for virtual style `IP:PORT`                                                                    | `dev-tigris-os.fly.dev`                    |
-| `ACCESS_KEY`           | Access key for `SERVER_ENDPOINT` credentials                                                                                                   | `Q3AM3UQ867SPQQA43P2F`                     |
-| `SECRET_KEY`           | Secret Key for `SERVER_ENDPOINT` credentials                                                                                                   | `zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG` |
-| `ENABLE_HTTPS`         | (Optional) Set `1` to indicate to use HTTPS to access `SERVER_ENDPOINT`. Defaults to `0` (HTTP)                                                | `1`                                        |
-| `MINT_MODE`            | (Optional) Set mode indicating what category of tests to be run by values `core`, `full`. Defaults to `core`                                   | `full`                                     |
-| `ENABLE_VIRTUAL_STYLE` | (Optional) Set `1` to indicate virtual style access . Defaults to `0` (Path style)                                                             | `1`                                        |
-| `RUN_ON_FAIL`          | (Optional) Set `1` to indicate execute all tests independent of failures (currently implemented for minio-go and minio-java) . Defaults to `0` | `1`                                        |
-| `SERVER_REGION`        | (Optional) Set custom region for region specific tests                                                                                         | `us-west-1`                                |
+| Environment variable   | Description                                                                                                                   | Example                                    |
+| :--------------------- | :---------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------- |
+| `SERVER_ENDPOINT`      | Endpoint of TigrisOS in the format `HOST:PORT`; for virtual style `IP:PORT`                                                   | `dev-tigris-os.fly.dev`                    |
+| `ACCESS_KEY`           | Access key for `SERVER_ENDPOINT` credentials                                                                                  | `Q3AM3UQ867SPQQA43P2F`                     |
+| `SECRET_KEY`           | Secret Key for `SERVER_ENDPOINT` credentials                                                                                  | `zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG` |
+| `ENABLE_HTTPS`         | (Optional) Set `1` to indicate to use HTTPS to access `SERVER_ENDPOINT`. Defaults to `0` (HTTP)                               | `1`                                        |
+| `MINT_MODE`            | (Optional) Set mode indicating what category of tests to be run by values `core`, `full`. Defaults to `core`                  | `full`                                     |
+| `ENABLE_VIRTUAL_STYLE` | (Optional) Set `1` to indicate virtual style access . Defaults to `0` (Path style)                                            | `1`                                        |
+| `RUN_ON_FAIL`          | (Optional) Set `1` to indicate execute all tests independent of failures (currently implemented for awscli) . Defaults to `0` | `1`                                        |
+| `SERVER_REGION`        | (Optional) Set custom region for region specific tests                                                                        | `us-west-1`                                |
 
 ### Mint log format
 
@@ -78,8 +72,8 @@ All test logs are stored in `/mint/log/log.json` as multiple JSON document. Belo
 After making changes to Mint source code a local podman image can be built/run by
 
 ```sh
-$ podman build -t tigrisdata/mint . -f Dockerfile
-$ podman run -e SERVER_ENDPOINT=dev-tigris-os.fly.dev -e ACCESS_KEY=Q3AM3UQ867SPQQA43P2F \
+$ docker build -t tigrisdata/mint . -f Dockerfile
+$ docker run -e SERVER_ENDPOINT=dev-tigris-os.fly.dev -e ACCESS_KEY=Q3AM3UQ867SPQQA43P2F \
              -e SECRET_KEY=zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG \
              -e ENABLE_HTTPS=1 -e MINT_MODE=full tigrisdata/mint:latest
 ```
@@ -88,10 +82,10 @@ $ podman run -e SERVER_ENDPOINT=dev-tigris-os.fly.dev -e ACCESS_KEY=Q3AM3UQ867SP
 
 Below are the steps need to be followed
 
-- Create new app directory under [build](https://github.com/tigrisdata/mint/tree/master/build) and [run/core](https://github.com/tigrisdata/mint/tree/master/run/core) directories.
+- Create new app directory under [build](https://github.com/tigrisdata/mint/tree/main/build) and [run/core](https://github.com/tigrisdata/mint/tree/main/run/core) directories.
 - Create `install.sh` which does installation of required tool/SDK under app directory.
-- Any build and install time dependencies should be added to [install-packages.list](https://github.com/tigrisdata/mint/blob/master/install-packages.list).
-- Build time dependencies should be added to [remove-packages.list](https://github.com/tigrisdata/mint/blob/master/remove-packages.list) for removal to have clean Mint podman image.
+- Any build and install time dependencies should be added to [install-packages.list](https://github.com/tigrisdata/mint/blob/main/install-packages.list).
+- Build time dependencies should be added to [remove-packages.list](https://github.com/tigrisdata/mint/blob/main/remove-packages.list) for removal to have clean Mint podman image.
 - Add `run.sh` in app directory under `run/core` which execute actual tests.
 
 #### Test data
