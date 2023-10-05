@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 #  Mint (C) 2017-2020 Minio, Inc.
+#  TigrisOS, (C) 2023 Tigris Data, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.

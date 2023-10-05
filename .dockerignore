@@ -1,4 +1,2 @@
 .git
 *.patch
-run/core/minio-go/main.go
-run/core/minio-go/minio-go

@@ -4,7 +4,6 @@ src/*
 temp
 __pycache__/
 log/*
-minio.test
 bin/*
 node_modules
 # exception to the rule
@@ -12,10 +11,6 @@ node_modules
 !bin/.gitkeep
 *.class
 *~
-run/core/minio-dotnet/bin/*
-run/core/minio-dotnet/obj/*
-run/core/minio-dotnet/out/*
-run/core/minio-go/main.go
 run/core/healthcheck/healthcheck
 .idea/
 .phive/
